@@ -1,0 +1,46 @@
+# Corporate Governance & Stock Performance study — Python dependencies
+# Generated from actual imports across notebooks 00-14, download_scripts/, and root-level
+# scripts (diagnostics.py, reg30_firm_fy_agg.py, etc.), pinned to the versions this project
+# was run and validated against.
+#
+# Install: pip install -r requirements.txt
+
+# --- Core data handling ---
+pandas==3.0.1
+numpy==2.4.3
+openpyxl==3.1.5          # .xlsx read/write (industry_map.xlsx, matched_companies.xlsx, etc.)
+lxml==6.0.2               # XBRL/XML parsing (governance filing CG.xml files)
+
+# --- Statistics / econometrics ---
+scipy==1.17.1
+statsmodels==0.14.6       # OLS, clustered SE, VIF, factor regressions
+scikit-learn==1.8.0
+linearmodels==7.0         # panel/Fama-MacBeth-style estimators
+
+# --- Plotting ---
+matplotlib==3.10.8
+seaborn==0.13.2
+
+# --- Market/financial data ---
+yfinance==1.2.0           # price, volume, and financial-statement pulls
+
+# --- Web scraping / document extraction ---
+requests==2.32.5
+beautifulsoup4==4.14.3    # HTML parsing (Reg 30 disclosure text)
+pymupdf==1.27.2.2         # PDF text extraction (Annual Reports); imported as `fitz`
+curl_cffi==0.13.0         # browser-impersonating HTTP client (anti-bot scraping)
+playwright==1.61.0        # headless-browser scraping
+
+# --- Progress / utility ---
+tqdm==4.67.3
+
+# --- Notebook execution (needed to run/re-execute the .ipynb pipeline) ---
+ipykernel==7.2.0
+nbformat==5.10.4
+nbconvert==7.17.1
+
+# --- External services, not pip-installable ---
+# Ollama (https://ollama.com) running locally, serving qwen2.5:7b-instruct and
+# qwen2.5:14b — required by download_scripts/cg_nlp_scorer.py, ar_extractor.py, and
+# reg30_extractor.py for LLM-based scoring/extraction. Not a Python package; install
+# separately and pull the two model tags before running those three scripts.

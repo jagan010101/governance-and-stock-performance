@@ -1,0 +1,29 @@
+# --- OS / editor junk ---
+.DS_Store
+.vscode/
+.idea/
+
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+.ipynb_checkpoints/
+
+# --- Secrets / local env ---
+.env
+
+# --- Large raw source data (~9.3GB total) — not version-controlled ---
+# See README.md "Setup" for how to obtain: 739 Annual Report PDFs, the BSE governance
+# filings archive, and the raw Reg 30 announcement scrape. Directory structure is kept
+# via .gitkeep so a fresh clone has the expected paths ready for re-population.
+data/raw/annual_reports/*
+!data/raw/annual_reports/.gitkeep
+data/raw/governance_reports.zip
+data/raw/archive/*
+!data/raw/archive/.gitkeep
+
+# data/processed/, data/logs/, and the rest of data/raw/ (small, manually-curated seed
+# files and pipeline outputs) ARE version-controlled — no blanket data/ ignore here.
