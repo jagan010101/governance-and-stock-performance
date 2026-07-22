@@ -24,6 +24,7 @@ data/raw/annual_reports/*
 data/raw/governance_reports.zip
 data/raw/archive/*
 !data/raw/archive/.gitkeep
+data/*.zip
 
 # data/processed/, data/logs/, and the rest of data/raw/ (small, manually-curated seed
 # files and pipeline outputs) ARE version-controlled — no blanket data/ ignore here.

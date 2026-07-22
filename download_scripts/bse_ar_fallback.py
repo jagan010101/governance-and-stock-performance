@@ -157,7 +157,7 @@ def fetch_ar_filings(bse_code):
 
 def download_attachment(attachment_name, dest):
     for base in ATTACH_BASES:
-        resp = get_with_retry(base + attachment_name, ATTACH_HEADERS, timeout=ATTACH_TIMEOUT)
+        resp = get_with_retry(base + attachment_name, timeout=ATTACH_TIMEOUT)
         time.sleep(REQUEST_DELAY)
         if resp is not None and resp.status_code == 200 and resp.content:
             dest.write_bytes(resp.content)
