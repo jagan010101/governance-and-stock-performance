@@ -5,12 +5,21 @@ A study of whether corporate governance quality predicts forward stock performan
 from BSE/NSE regulatory filings (XBRL) plus an LLM-scored narrative-quality layer, tested
 against forward returns, risk-adjusted alpha, volatility, and ROE.
 
-**Headline result: a clean null.** After correcting for the fact that the governance
-index has six-then-five separate sub-dimensions tested against seven outcomes, none of
-the sub-index → outcome relationships survive multiple-testing correction in the primary
-specification. Two narrow exceptions exist in robustness cuts (not the headline spec) —
-see [Findings](#findings) below. The full result set, including every robustness
-variant, is in `regression_results_full.txt`.
+**Headline result: a clean null on returns.** After correcting for the fact that the
+governance index has six-then-five separate sub-dimensions tested against seven outcomes,
+none of the sub-index → outcome relationships survive multiple-testing correction in the
+primary specification. Two narrow exceptions exist in robustness cuts (not the headline
+spec) — see [Findings](#findings) below.
+
+**Secondary result on risk:** better-governed firms *are* lower-volatility firms — a
+cross-sectional association that holds out-of-sample in FY25 and survives familywise
+correction for one pair. But it does **not** survive a within-firm test: these governance
+indices are near-time-invariant per firm (year-over-year correlation up to 1.00), so the
+data cannot distinguish a governance *effect* from a stable firm *attribute*. Details and
+the stress-test that establishes this: [Findings](#findings) → the risk channel
+(`17_volatility_study.ipynb`).
+
+The full result set, including every robustness variant, is in `regression_results_full.txt`.
 
 ## Contents
 
@@ -30,7 +39,7 @@ variant, is in `regression_results_full.txt`.
 | Annual Reports (PDF) | 739 PDFs, 247 firms × up to 3 FYs — board structure, audit fees, RPT, pledge, contingent liabilities | `data/raw/annual_reports/` |
 | BSE Reg 30 (SEBI LODR) announcements | Director/auditor/credit-rating-change disclosures, 100-firm stratified sample | `data/raw/archive/reg30_announcements/` |
 | Prowess (CMIE) | Company-financials cross-reference for BSE↔Prowess name matching | `data/raw/prowess_raw_data.xlsx` |
-| yfinance | Daily prices, volume, financial statements, shares outstanding | live-fetched, not stored raw |
+| yfinance | Daily prices, volume, financial statements, shares outstanding | pinned snapshot in `data/processed/prices_daily.parquet` (built by `download_scripts/fetch_market_data.py`; consumed by `09`/`15`/`16`/`17`). Other notebooks fetch via `yf_cache.py` into `data/raw/yfinance_cache/` — see Setup for how the two differ |
 | Fama-French 5 + Momentum factors | Monthly India factor returns | `data/processed/ff5mom_factors_monthly.csv` (static — no in-repo downloader; provenance undocumented, see Limitations) |
 
 Universe: `data/raw/top_500_companies.xlsx` (500 companies, ranked by market cap
@@ -61,9 +70,16 @@ saved to `data/processed/`).
 | `12_summary.ipynb` | Pipeline's own original summary (Table A results only) |
 | `13_findings_summary.ipynb` | **Diagnostic narrative** — all 14 findings from the diagnose-and-fix effort, one at a time, each with a live computation against real saved data |
 | `14_index_extension.ipynb` | Builds `cg_scores_augmented_fy.csv` — extends AINDEX/BINDEX/CINDEX with 6 AR/Reg30 metrics, consumed by `09_regression.ipynb` Section 11 |
+| `15_power_analysis.ipynb` | **Minimum detectable effects** for the primary spec — analytic and simulation-calibrated MDE per (sub-index, outcome), at both the raw p<.05 and the RW familywise standard; quantifies what the null can and cannot rule out |
+| `16_score_treatment_robustness.ipynb` | Primary spec re-run under the two previously-unconsumed score treatments from `06` — `Avg_Score_missing_as_na` (missing sources dropped, not scored 0) and `Avg_Score_altweight` ({1,2,4} weights) |
+| `17_volatility_study.ipynb` | **The risk channel.** Governance → forward *volatility* (total/idiosyncratic/downside + max-drawdown, 126-td horizon). FY23–FY24 states the hypothesis (TRINDEX/OINDEX → lower risk), tested on **FY25** (untouched by any prior notebook) as a pre-declared 8-test family with lagged-vol control and RW correction — then §6 stress-tests that test itself: firm-level persistence and a within-firm first-difference design, which show the association is a stable firm *attribute*, not a demonstrated effect |
 
 Supporting scripts:
 
+- `download_scripts/fetch_market_data.py` — one-shot snapshot of daily adjusted closes
+  (universe + `^CRSLDX`) into `data/processed/prices_daily.parquet`, with retry logic and a
+  provenance meta file. The committed snapshot pins the study dataset: `09`/`15`/`16`/`17`
+  run offline and reproducibly from it. `--refresh` consciously re-pins to a new fetch.
 - `download_scripts/` — scrapers and extractors: `bse_cg_downloader.py`,
   `nse_ar_downloader.py`, `bse_ar_fallback.py`, `reg30_scraper.py`,
   `reg30_fetch_relevant.py`, `reg30_repair_attachments.py`,
@@ -114,6 +130,13 @@ reaching the headline result —
    absorb 100% of their own cross-sectional variation once industry fixed effects are
    applied, contributing nothing to identification. A Sector-FE version (broader FE, no
    firms dropped) is reported as a robustness check, not the headline.
+3. **Two firms (JINDALSTEL, HINDCOPPER) were silently missing from the original sample.**
+   The original run's live `yf.download` failed transiently for both tickers, and the
+   <50%-missing validity filter then dropped them as if they had no data — both in fact
+   have full price coverage. Discovered while pinning the price snapshot; the panel was
+   rebuilt with them restored (Table A 468→472 firm-FY rows; primary spec 418→420 rows,
+   209→210 firms — JINDALSTEL enters, HINDCOPPER remains excluded as a singleton
+   industry). No conclusion changes; headline numbers below are from the corrected sample.
 
 **Primary spec result**: 5 sub-indices × 7 outcomes = 35 tests, **0/35 survive** RW
 correction (smallest RW p = 0.133).
@@ -124,11 +147,61 @@ correction (smallest RW p = 0.133).
 - Event study: CINDEX (narrative quality) → ±1-day CAR, marginal (RW p = 0.080).
 
 Every other cut — Table B (+AR variables), Table C (+AR+Reg30), the AR/Reg30-augmented
-indices, expanded controls (liquidity/ROA/asset growth), portfolio sorts, and even the
+indices, expanded controls (liquidity/ROA/asset growth), portfolio sorts, the two
+alternative score treatments (missing-as-na and {1,2,4} weights, `16` — coefficients
+essentially unchanged, max shift 0.012 per 1 SD; the RW step there is flag-gated off for
+cheap re-runs), and even the
 superseded contemporaneous-timing design (retroactively RW-corrected, 66 hypotheses) —
 comes back to the same null. This convergence across independently-built variable sets
 and timing conventions is itself evidence the null is real, not an artifact of any one
 design choice.
+
+**How small an effect could this design have seen?** `15_power_analysis.ipynb` calibrates
+minimum detectable effects by cluster-bootstrap simulation (the textbook `2.8×SE` formula
+is optimistic here — it delivers ~70% power, not 80%). The null bounds effects only above
+the MDE; smaller effects were never detectable, which matters doubly given the
+survivorship attenuation in Limitations §1. Full table:
+`data/processed/power_mde_primary.csv`.
+
+### The risk channel: a real cross-sectional association, but not an effect (`17_volatility_study.ipynb`)
+
+The return/alpha null is robust. The volatility signal that flickered in the robustness cuts
+above is the only thing in this project that is *not* null — but it is weaker than it first
+looks, and `17` is written to establish exactly how weak. It treats FY23–FY24 as
+hypothesis-generating (TRINDEX and OINDEX → lower forward risk) and tests a pre-declared
+family of 8 (2 indices × total/idiosyncratic/downside vol + max-drawdown, 126-td horizon) on
+**FY25**, which no other notebook touches.
+
+**What holds up:**
+- All 8 coefficients keep the same negative sign in FY25 (governance → lower risk).
+- 4/8 at raw p<.05 out-of-sample; 2/8 after a pre-filing *lagged-volatility* control.
+- After Romano-Wolf on the held-out family, **TRINDEX → max-drawdown survives** (RW p = 0.034)
+  without the lagged control.
+
+**What does not — and this is the load-bearing caveat:** Romano-Wolf corrects for multiple
+testing, not for the fact that a "held-out year" is **the same firms**, not a fresh sample.
+Both sides of the regression are highly persistent — year-over-year firm correlation is
+**1.00 for OINDEX**, 0.94 for TRINDEX, ~0.6 for volatility — so a stable cross-sectional
+association reproduces in FY25 substantially by construction. The within-firm
+first-difference test (§6), which sweeps out all time-invariant firm heterogeneity, is the
+honest arbiter, and it finds:
+- **TRINDEX: no effect** (p = 0.24–0.42 across risk measures), despite real within-firm
+  variation (differenced SD 0.37).
+- **OINDEX: not identifiable at all** — within-firm SD of 0.005 means it is effectively a
+  fixed firm attribute here; its first-difference coefficients are artifacts of dividing by
+  noise (implausible magnitudes, flipped signs) and are reported as uninterpretable.
+- Consistently, adding the lagged-vol control to the held-out cross-section leaves 0/8
+  surviving correction (min RW p = 0.19).
+
+**Therefore:** *"well-governed firms tend to be lower-risk firms"* is supported as a
+descriptive, cross-sectional fact. *"Improving governance reduces risk"* is **not** — this
+design cannot separate a governance effect from any stable firm trait correlated with both.
+Governance here behaves like a near-time-invariant *attribute* of a firm rather than a lever
+that moves risk, which is itself informative about what these indices measure. Settling it
+would need firms with genuine governance *transitions*, or a panel long enough for
+within-firm variation to accumulate — neither available at T=3. Outputs:
+`data/processed/volatility_heldout_fy25.csv`, `volatility_heldout_romano_wolf.csv`,
+`volatility_within_firm_firstdiff.csv`.
 
 ## Limitations
 
@@ -160,6 +233,26 @@ Stated plainly, not smoothed over:
 pip install -r requirements.txt
 ```
 
+Market data: `data/processed/prices_daily.parquet` is a committed, pinned snapshot of
+daily adjusted closes (universe + Nifty 500) — `09_regression.ipynb`,
+`15_power_analysis.ipynb`, and `16_score_treatment_robustness.ipynb` run offline from it,
+so the headline results are exactly reproducible from a fresh clone. If the snapshot is
+missing (or you deliberately want to re-pin it to fresh data, which will move every
+downstream number), run:
+
+```bash
+python download_scripts/fetch_market_data.py --refresh
+```
+
+The remaining notebooks (`01`, `03`-`05`, `08`, `10`-`13`) fetch through `yf_cache.py`, a
+disk-backed cache of yfinance calls under `data/raw/yfinance_cache/`. That removes the
+redundant network I/O, but note the two mechanisms give different guarantees: the cache
+returns whatever was fetched on first run and never expires, so it makes re-runs *fast and
+stable on one machine*, while the snapshot is a single versioned artifact with recorded
+provenance that makes results *reproducible across machines*. Consolidating the two — most
+naturally by having `yf_cache` seed from the committed snapshot for price data — is a known
+follow-up.
+
 The three LLM-based extractors (`download_scripts/cg_nlp_scorer.py`,
 `download_scripts/ar_extractor.py`, `download_scripts/reg30_extractor.py`) additionally
 require a local [Ollama](https://ollama.com) server with `qwen2.5:7b-instruct` and
@@ -173,7 +266,7 @@ Raw data (`data/raw/annual_reports/`, `data/raw/governance_reports.zip`,
 ## Project structure
 
 ```
-├── 00-14_*.ipynb              pipeline notebooks, run in numeric order
+├── 00-17_*.ipynb              pipeline notebooks, run in numeric order
 ├── diagnostics.py             Phase-1 diagnostic script
 ├── reg30_firm_fy_agg.py       Reg 30 event → firm-FY aggregation
 ├── reg30_firm_quarter_agg.py  Reg 30 event → firm-quarter aggregation

@@ -1,0 +1,18 @@
+{
+ "fetched": "2026-07-22T18:42:00",
+ "start": "2019-07-01",
+ "end_exclusive": "2026-07-23",
+ "first_date": "2019-07-01",
+ "last_date": "2026-07-22",
+ "n_tickers": 248,
+ "n_rows": 1749,
+ "failed": [
+  "AKZOINDIA.NS",
+  "GET&D.NS",
+  "ISEC.NS",
+  "PEL.NS",
+  "SUVENPHARMA.NS",
+  "ZOMATO.NS"
+ ],
+ "yfinance_version": "1.5.1"
+}

@@ -1,9 +1,9 @@
 field,coverage_pct,recommended
-audit_fees_inr_crore,53.84615384615385,True
-board_size,27.136752136752136,True
-board_independence_ratio,27.136752136752136,True
-board_meeting_count,22.435897435897438,True
-contingent_liabilities_inr_crore,11.324786324786325,False
-promoter_pledge_pct,4.05982905982906,False
-rpt_aggregate_inr_crore,2.1367521367521367,False
-board_avg_attendance_pct,0.2136752136752137,False
+audit_fees_inr_crore,53.38983050847458,True
+board_size,26.906779661016948,True
+board_independence_ratio,26.906779661016948,True
+board_meeting_count,22.45762711864407,True
+contingent_liabilities_inr_crore,11.652542372881355,False
+promoter_pledge_pct,4.025423728813559,False
+rpt_aggregate_inr_crore,2.11864406779661,False
+board_avg_attendance_pct,0.211864406779661,False

@@ -9,6 +9,7 @@
 pandas==3.0.1
 numpy==2.4.3
 openpyxl==3.1.5          # .xlsx read/write (industry_map.xlsx, matched_companies.xlsx, etc.)
+pyarrow==23.0.1           # parquet read/write (data/processed/prices_daily.parquet snapshot)
 lxml==6.0.2               # XBRL/XML parsing (governance filing CG.xml files)
 
 # --- Statistics / econometrics ---
@@ -22,7 +23,9 @@ matplotlib==3.10.8
 seaborn==0.13.2
 
 # --- Market/financial data ---
-yfinance==1.2.0           # price, volume, and financial-statement pulls
+yfinance==1.2.0           # price, volume, and financial-statement pulls; after the price
+                          # snapshot (download_scripts/fetch_market_data.py), 09_regression
+                          # runs offline from data/processed/prices_daily.parquet
 
 # --- Web scraping / document extraction ---
 requests==2.32.5
