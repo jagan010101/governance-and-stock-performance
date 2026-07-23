@@ -39,7 +39,7 @@ The full result set, including every robustness variant, is in `regression_resul
 | Annual Reports (PDF) | 739 PDFs, 247 firms × up to 3 FYs — board structure, audit fees, RPT, pledge, contingent liabilities | `data/raw/annual_reports/` |
 | BSE Reg 30 (SEBI LODR) announcements | Director/auditor/credit-rating-change disclosures, 100-firm stratified sample | `data/raw/archive/reg30_announcements/` |
 | Prowess (CMIE) | Company-financials cross-reference for BSE↔Prowess name matching | `data/raw/prowess_raw_data.xlsx` |
-| yfinance | Daily prices, volume, financial statements, shares outstanding | pinned snapshot in `data/processed/prices_daily.parquet` (built by `download_scripts/fetch_market_data.py`; consumed by `09`/`15`/`16`/`17` — the earlier notebooks still live-fetch, see Setup) |
+| yfinance | Daily prices, volume, financial statements, shares outstanding | pinned snapshot in `data/processed/prices_daily.parquet` (built by `download_scripts/fetch_market_data.py`; consumed by `09`/`15`/`16`/`17`). Other notebooks fetch via `yf_cache.py` into `data/raw/yfinance_cache/` — see Setup for how the two differ |
 | Fama-French 5 + Momentum factors | Monthly India factor returns | `data/processed/ff5mom_factors_monthly.csv` (static — no in-repo downloader; provenance undocumented, see Limitations) |
 
 Universe: `data/raw/top_500_companies.xlsx` (500 companies, ranked by market cap
@@ -244,8 +244,14 @@ downstream number), run:
 python download_scripts/fetch_market_data.py --refresh
 ```
 
-Notebooks `00`-`08` and `10`-`13` still call yfinance live and are subject to fetch-time
-drift — migrating them to the snapshot is a known follow-up.
+The remaining notebooks (`01`, `03`-`05`, `08`, `10`-`13`) fetch through `yf_cache.py`, a
+disk-backed cache of yfinance calls under `data/raw/yfinance_cache/`. That removes the
+redundant network I/O, but note the two mechanisms give different guarantees: the cache
+returns whatever was fetched on first run and never expires, so it makes re-runs *fast and
+stable on one machine*, while the snapshot is a single versioned artifact with recorded
+provenance that makes results *reproducible across machines*. Consolidating the two — most
+naturally by having `yf_cache` seed from the committed snapshot for price data — is a known
+follow-up.
 
 The three LLM-based extractors (`download_scripts/cg_nlp_scorer.py`,
 `download_scripts/ar_extractor.py`, `download_scripts/reg30_extractor.py`) additionally
