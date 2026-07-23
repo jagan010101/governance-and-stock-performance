@@ -1,0 +1,17 @@
+t,p_rw,Index,measure,spec
+-3.0483133586937763,0.0335,TRINDEX,max_drawdown,no lag control
+-2.3533961449504552,0.1285,TRINDEX,total_vol,no lag control
+-2.2373867620315147,0.148,OINDEX,total_vol,no lag control
+-2.05456036403169,0.2025,OINDEX,idio_vol,no lag control
+-1.8940972298107308,0.2315,TRINDEX,idio_vol,no lag control
+-1.3938198216188318,0.369,TRINDEX,downside_vol,no lag control
+-1.5024964330117012,0.369,OINDEX,downside_vol,no lag control
+-1.0503810448009185,0.369,OINDEX,max_drawdown,no lag control
+-2.1909010316839006,0.1945,TRINDEX,max_drawdown,+ lagged vol
+-2.0786822203019057,0.2005,OINDEX,total_vol,+ lagged vol
+-1.9582375080483148,0.2465,OINDEX,idio_vol,+ lagged vol
+-1.4972610661984436,0.447,TRINDEX,total_vol,+ lagged vol
+-1.3553257306034296,0.518,TRINDEX,idio_vol,+ lagged vol
+-1.338381137564376,0.518,OINDEX,downside_vol,+ lagged vol
+-0.6943150223041167,0.7455,TRINDEX,downside_vol,+ lagged vol
+-0.6557843320458868,0.7455,OINDEX,max_drawdown,+ lagged vol
